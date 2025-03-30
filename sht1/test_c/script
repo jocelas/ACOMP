@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for i in 1, 12.5, 15.3, 20; do
+    ./test "$i";
+done
