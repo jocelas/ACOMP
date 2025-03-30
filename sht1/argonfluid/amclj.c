@@ -44,7 +44,7 @@ int main() {
 
   strcpy(fname,"mclj_out.dat");
   printf(" fname=[mclj_out.dat] ");
-  getval_s(fname);
+  //getval_s(fname);
 
   fpi=fopen(fname,"r");
 
@@ -118,11 +118,11 @@ int main() {
 
   /* Write g(r)? */
 
-  printf(" Write g(r) to 'amclj.dat? [y] ");
-  copy=(char)fgetc(stdin);
+  //printf(" Write g(r) to 'amclj.dat? [y] ");
+  //copy=(char)fgetc(stdin);
 
-  if(copy=='y'||copy=='Y'||copy==NL) {
-
+  //if(copy=='y'||copy=='Y'||copy==NL) {
+  if(1){
     fact=3.0/(2.0*M_PI*rho*n*nt);
     fpo=fopen("amclj.dat","w");
 
@@ -138,17 +138,17 @@ int main() {
 
   }
 
-  if(copy!=NL) {
+  /*if(copy!=NL) {
     copy=(char)fgetc(stdin);
-  }
+  }*/
   
   /* Write PDB file? */
 
-  printf(" Write PDB format to amclj.pdb? [y] ");
-  copy=(char)fgetc(stdin);
+  //printf(" Write PDB format to amclj.pdb? [y] ");
+  //copy=(char)fgetc(stdin);
 
-  if(copy=='y'||copy=='Y'||copy==NL) {
-
+  //if(copy=='y'||copy=='Y'||copy==NL) {
+  if (1) {
     fpo=fopen("amclj.pdb","w");
 
     fprintf(fpo,"CRYST1"" %8.3lf %8.3lf %8.3lf",c,c,c);

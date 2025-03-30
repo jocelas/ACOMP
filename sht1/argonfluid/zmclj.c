@@ -22,7 +22,7 @@
 
 /**********************************************************************/
 
-int main() {
+int main(int count, char *args[]) {
 
 /**********************************************************************/
 
@@ -38,8 +38,8 @@ int main() {
   /* Read old checkpoint file */
 
   strcpy(fname,"mclj_out.dat");
-  printf("         infile=[mclj_out.dat] ");
-  getval_s(fname);
+  //printf("         infile=[mclj_out.dat] ");
+  //getval_s(fname);
 
   fpi=fopen(fname,"r");
 
@@ -73,6 +73,8 @@ int main() {
 
   /* User input */
 
+/*
+
   printf("              n=%13d\n",n);
   printf("            rho=[%12.5lf] ",rho);
   getval_d(&rhon);
@@ -89,6 +91,12 @@ int main() {
   printf("   ntjob/ntskip=[%12d] ",ntjob);
   getval_i(&ntjob);
 
+*/
+
+ntjob = atoi(args[1]);
+
+
+
   /* Rescale positions */
 
   if(rhon!=rho) {
@@ -104,8 +112,8 @@ int main() {
   /* Write new startup file */
 
   strcpy(fname,"mclj_in.dat");
-  printf("        outfile=[ mclj_in.dat] ");
-  getval_s(fname);
+  //printf("        outfile=[ mclj_in.dat] ");
+  //getval_s(fname);
 
   nt=0;
 

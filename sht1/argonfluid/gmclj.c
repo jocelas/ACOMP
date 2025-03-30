@@ -22,7 +22,7 @@
 
 /**********************************************************************/
 
-int main() {
+int main(int count, char *args[]) {
 
 /**********************************************************************/
 
@@ -38,7 +38,7 @@ int main() {
 
   /* User input */
 
-  printf("              n=");
+/*  printf("              n=");
   getval_i(&n);
   printf("            rho=");
   getval_d(&rho);
@@ -55,9 +55,21 @@ int main() {
   printf("   ntjob/ntskip=");
   getval_i(&ntjob);
 
+  */
+
+  n = 256;
+  rho = 0.84;
+  t = 0.694;
+  disp = atof(args[1]);
+  dr = 0.01;
+  ntskip = 1;
+  ntprint = 1;
+  ntjob = atoi(args[2]);
+
+
   strcpy(fname,"mclj_in.dat");
-  printf("          fname=[mclj_in.dat] ");
-  getval_s(fname);
+  //printf("          fname=[mclj_in.dat] ");
+  //getval_s(fname);
 
   /* Allocate arrays */
 
