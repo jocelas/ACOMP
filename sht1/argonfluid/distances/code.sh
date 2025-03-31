@@ -3,7 +3,7 @@
 
 
 
-for disp in $(seq 0.0 0.1 1.5); do
+for disp in $(seq 1.6 0.1 3.0); do
 
     echo "running with Disp = $disp..."
 
