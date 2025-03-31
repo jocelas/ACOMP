@@ -58,13 +58,13 @@ int main(int count, char *args[]) {
   */
 
   n = 256;
-  rho = 0.84;
+  rho = atof(args[1]);
   t = 0.694;
-  disp = atof(args[1]);
+  disp = atof(args[2]);
   dr = 0.01;
   ntskip = 1;
   ntprint = 1;
-  ntjob = atoi(args[2]);
+  ntjob = atoi(args[3]);
 
 
   strcpy(fname,"mclj_in.dat");

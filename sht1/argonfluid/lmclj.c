@@ -22,7 +22,7 @@
 
 /**********************************************************************/
 
-int main() {
+int main(int count, char *args[]) {
 
 /**********************************************************************/
 
@@ -38,8 +38,9 @@ int main() {
   /* User input */
 
   for(;;) {
-    printf("              n=");
-    scanf("%d",&n);
+    //printf("              n=");
+    //scanf("%d",&n);
+    n = 256;
     m=0;
     while(m*m*m<2*n) {
       m=m+2;
@@ -50,6 +51,7 @@ int main() {
   }
   magic:
 
+  /*
   printf("            rho=");
   scanf("%lf",&rho);
   printf("              t=");
@@ -64,8 +66,17 @@ int main() {
   scanf("%d",&ntprint);
   printf("   ntjob/ntskip=");
   scanf("%d",&ntjob);
-
+*/
   strcpy(fname,"mclj_in.dat");
+  
+  rho = atof(args[1]);
+  t = 0.694;
+  disp = atof(args[2]);
+  dr = 0.01;
+  ntskip = 1;
+  ntprint = 1;
+  ntjob = atoi(args[3]);
+
 
   /* Allocate arrays */
 

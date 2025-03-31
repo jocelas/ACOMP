@@ -9,7 +9,7 @@ for disp in $(seq 0.0 0.1 1.5); do
 
     mkdir $disp
 
-    ../gmclj $disp 100
+    ../gmclj 0.84 $disp 100
 
     ../mclj > "log.dat"
 
@@ -17,7 +17,7 @@ for disp in $(seq 0.0 0.1 1.5); do
 
     ../mclj > "$disp/log.dat"
 
-    ../amclj | tee "result.dat"
+    ../amclj | tee "$disp/result.dat"
 
     mv amclj.dat $disp
 
