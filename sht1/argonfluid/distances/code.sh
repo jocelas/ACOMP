@@ -3,13 +3,13 @@
 
 
 
-for disp in $(seq 1.6 0.1 3.0); do
+for disp in $(seq 0.1 0.05 0.5); do
 
     echo "running with Disp = $disp..."
 
     mkdir $disp
 
-    ../gmclj 0.84 $disp 100
+    ../gmclj 0.84 $disp 1000
 
     ../mclj > "log.dat"
 
@@ -21,7 +21,7 @@ for disp in $(seq 1.6 0.1 3.0); do
 
     mv amclj.dat $disp
 
-    mv traj.xyz $disp
+    #mv traj.xyz $disp
 
 done
 echo "Done, exited normally"
