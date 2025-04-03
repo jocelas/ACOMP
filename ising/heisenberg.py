@@ -23,6 +23,31 @@ def animate(data, fname, fps, colormap = 'gray', nice = False):
 
     plt.close(fig)
 
+def animate_three(data, fname, fps, colormap = 'gray'):
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4))  # 3 subplots horizontally
+
+    data1 = data[:,:,:,0]
+    data2 = data[:,:,:,1]
+    data3 = data[:,:,:,2]
+
+    ims = []
+    for ax, data in zip(axes, [data1, data2, data3]):
+        im = ax.imshow(data[0], vmin=-1, vmax=1, cmap=colormap, animated=True)
+        ax.axis("off")
+        ims.append(im)
+
+    def update(frame):
+        for i, data in enumerate([data1, data2, data3]):
+            ims[i].set_array(data[frame])
+        return ims
+
+    ani = anim.FuncAnimation(fig, update, frames=len(data), interval=1000/fps, blit=False)
+
+    ani.save(fname, fps=fps)
+
+    plt.close(fig)
+
+
 @njit(cache=True)
 def circle_mask(n, r):
     mask = np.zeros((n, n), dtype=np.float64)
@@ -215,23 +240,196 @@ def osc_mc(steps:int, n, a_in, j, r, omega, amplitude, T, number_of_datapoints =
 
     return a, energies, magnetizations, data
 
-steps = 1e8
+
+
+#
+#   Rotating magnetic field
+#
+@njit(cache=True)
+def rot_h(t,n,x,y, r, omega, amplitude):
+    mask = (x-n/2)**2 + (y-n/2)**2 < r**2
+    return (amplitude * np.array([np.cos(omega*t), np.sin(omega*t), 0])) if mask else np.zeros(3)
+
+@njit(cache=True)
+def turn_h(t,n,x_in,y_in,r,omega,amplitude):
+
+    h_local = np.zeros(3)
+
+    x = x_in - n/2
+    y = y_in - n/2
+
+    mask = x**2 + y**2 < r**2
+    norm = np.sqrt(x * x + y * y) + 1e-12  # avoid division by zero
+    coswt = np.cos(omega * t)
+    sinwt = np.sin(omega * t)
+
+    phix = (-y * coswt - x * sinwt) / norm
+    phiy = ( x * coswt - y * sinwt) / norm
+    phiz = 0.0
+
+    if mask:
+        h_local[0] = phix
+        h_local[1] = phiy
+        h_local[2] = phiz
+
+
+    return amplitude * h_local
+
+@njit(cache=True)
+def rot_energy_step(t, n, a, new_site, old_site, x, y, r, j, omega, amplitude, nbs):
+    #h = rot_h(t,n,x,y,r,omega,amplitude)
+    h = turn_h(t,n,x,y,r,omega,amplitude)
+    magnetic = np.dot(h,(old_site - new_site))
+    interaction = j * np.sum(np.dot(neighbors(a, x, y, nbs), (old_site - new_site)))
+    return interaction + magnetic
+
+@njit(cache=True)
+def rot_mc_step(t, n, a, j, r, omega, amplitude, T, old_site, nbs):
+    
+    x = int(np.random.rand() * n)
+    y = int(np.random.rand() * n)
+
+    old_site[:] = a[x, y,:]
+
+
+    a[x,y,:] = random_unit_vector()
+
+    new_site = a[x,y]
+
+    dE = rot_energy_step(t, n, a, new_site, old_site, x, y, r, j, omega, amplitude, nbs)
+
+    if mc_accept(dE, T):
+        return dE, a
+    else:
+        a[x,y,:] = old_site
+        return 0.0, a
+    
+@njit(cache=True)
+def rot_mc(steps:int, n, a_in, j, r, omega, amplitude, T, number_of_datapoints = 1000, number_of_frames = 100):
+
+    a = a_in.copy()
+    old_site = np.empty(3)
+    nbs = np.empty((4,3))
+
+    save_every_data_points = steps // number_of_datapoints
+    data_point = 0
+    save_every_frames = steps // number_of_frames
+    frame = 0
+    data = np.empty((number_of_frames, n, n, 3))
+
+    energies = np.empty(number_of_datapoints)
+    magnetizations = np.empty((number_of_datapoints, 3))
+
+    #initial_H_glob = amplitude * circle_mask(n,r)[:,:,None] # for rot_h
+
+    initial_H_glob = np.empty((n,n,3))
+    for i in range(n):
+        for j in range(n):
+            initial_H_glob[i,j,:] = turn_h(0,n,i,j,r,omega,amplitude)
+
+    E_glob = total_energy(a,j,initial_H_glob)
+
+    for step in range(steps):
+        if step % save_every_data_points == 0:
+            energies[data_point] = E_glob
+            magnetizations[data_point] = total_magnetization(a)
+            data_point += 1
+
+        if step % save_every_frames == 0:
+            data[frame,:,:,:] = a.copy()
+            frame += 1
+
+        dE, a = rot_mc_step(step, n, a, j, r, omega, amplitude, T, old_site, nbs)
+
+        E_glob += dE
+
+    return a, energies, magnetizations, data
+
+
+
+
+
+
+#######################
+#
+#   Testing
+
+
+
+# # a_in = np.zeros((n,n,3), dtype = np.float64)
+# # a_in[:,:,0] = circle_mask(n,n/7.)
+# # a_in[:,:,0] = circle_mask(n,n/7.) - 1.
+# # norm = np.sqrt((a_in ** 2).sum(axis=2))  # shape (n, n)
+
+# # for i in range(3):
+# #     a_in[:, :, i] /= norm  # normalize each component
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Heisenberg model simulation with driven field')
+
+parser.add_argument('--T', type=float, required=True, help='Temperature')
+parser.add_argument('--amplitude', type=float, required=True, help='Field amplitude')
+parser.add_argument('--omega', type=float, required=True, help='Driving frequency')
+#parser.add_argument('--steps', type=int, required=True, help='Number of Monte Carlo steps')
+parser.add_argument('--fname', type=str, required=True, help='Output video file name (e.g. output.mp4)')
+
+args = parser.parse_args()
+
+
+
+#####################
+
+
+
 n = 200
+
 a_in = lattice_uniform(n)
-j = 10
-r = n//8
-omega = 1.67e-6
-amplitude = -50
-T = 0.01
 
+
+
+
+j = 1
+r = n/7
+T = args.T
+amplitude = args.amplitude
+omega = args.omega
+steps = 100/omega
+fname = f"videos/{args.fname}.mp4"
+number_of_datapoints = 10000
+number_of_frames = 1000
+
+print(f"\n\n Running with omega = {omega}")
 start = time()
-a, energies, magnetizations, data = osc_mc(int(steps), n, a_in, j, r, omega, amplitude, T)
+a, energies, magnetizations, data = rot_mc(int(steps), n, a_in, j, r, omega, amplitude, T, number_of_datapoints=number_of_datapoints, number_of_frames=number_of_frames)
 end = time()
 
-print(f'Simulation Time = {end - start} s')
+hdr = f"n = {n}, T = {T}, amplitude = {amplitude}, omega= {omega}, ndata = {number_of_datapoints}, nframes = {number_of_frames}"
+
+np.savetxt(f"rotate/E_omega{omega}_nodp{number_of_datapoints:.1e}.dat", energies, header = hdr)
+
+print(f'\n\nSimulation Time = {end - start} s')
+
+np.savetxt(f"rotate/{omega}.dat", data.reshape(number_of_frames,n*n*3), delimiter = ",", header = hdr)
 
 start = time()
-animate(data[:,:,:,0], 'videos/first.mp4', 20, nice = True)
+animate_three(data[:,:,:,], f'rotate/{omega:.1e}.mp4', 60)
 end = time()
+
+#t = np.arange(1000)
+#plt.plot(np.cos(omega*steps/1000*t), magnetizations[t,0]/n**2)
+#plt.show()
 
 print(f'Time for animation creation = {end - start} s')
+print(f"______________________\n\n")
+
+# n = 200
+
+# initial_H_glob = np.empty((n,n,3))
+# for i in range(n):
+#     for j in range(n):
+#         initial_H_glob[i,j,:] = turn_h(0,200,i,j, n/7, 0.1, 20)
+
+# plt.imshow(initial_H_glob[:,:,2])
+# plt.colorbar()
+# plt.show()
