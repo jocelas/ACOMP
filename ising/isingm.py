@@ -1,5 +1,6 @@
 #Magnetic fields
 import numpy as np
+from numba import jit, prange, njit
 
 def sin_H(n,factor=0.5):
     x = np.arange(n)
