@@ -1,3 +1,6 @@
+
+For a full solution checkout [github.com/jocelas/ACOMP]{https://github.com/jocelas/ACOMP}
+
 # 6 Pair correlation and nearest neighbors
 
 
