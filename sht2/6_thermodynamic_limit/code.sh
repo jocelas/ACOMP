@@ -5,7 +5,7 @@ disp=0.3
 t=0.694
 
 i=0
-for n in 5 10 25 50 108 256 500; do
+for n in 1000; do
 
     printf "Running with n = $n ...... \n\n"
 
