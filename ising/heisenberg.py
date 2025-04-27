@@ -413,7 +413,7 @@ print(f'\n\nSimulation Time = {end - start} s')
 np.savetxt(f"rotate/{omega}.dat", data.reshape(number_of_frames,n*n*3), delimiter = ",", header = hdr)
 
 start = time()
-animate_three(data[:,:,:,], f'rotate/{omega:.1e}.mp4', 60)
+animate_three(data[:,:,:,], f'rotate/{omega:.1e}.mp4', 20)
 end = time()
 
 #t = np.arange(1000)
