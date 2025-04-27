@@ -60,6 +60,9 @@ def randominitial(n):
     b[b==0] = -1
     return b
 
+def all_up(n):
+    return np.ones((n,n))
+
 def probabilities(j,T):
 
     probs = []
