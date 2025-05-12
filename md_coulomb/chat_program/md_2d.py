@@ -395,7 +395,7 @@ class MDSimulation2D:
         if save_path:
             if save_path.lower().endswith('.mp4'):
                 pass
-                writer = animation.PillowWriter(fps=1000//interval)
+                writer = animation.FFMpegWriter(fps=1000//interval)
             elif save_path.lower().endswith('.gif'):
                 pass
                 writer = animation.PillowWriter(fps=1000//interval)
