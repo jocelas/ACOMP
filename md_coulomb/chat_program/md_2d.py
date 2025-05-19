@@ -65,12 +65,12 @@ class MDSimulation2D:
         self.temperature_history = []
         self.pressure_history = []
 
+        self.density = self.N/self.Lx/self.Ly
+
     def reset(self):
         self._initialize_positions(mode = self.mode)
         self._initialize_velocities(self.initial_temperature)
-    
-    def density(self):
-        return self.N / (self.Lx * self.Ly)
+
 
     def _initialize_positions(self, mode='random'):
         """Initialize particle positions either on a square grid or randomly within the box."""
@@ -360,7 +360,11 @@ class MDSimulation2D:
         ax.set_xlim(0, self.Lx)
         ax.set_ylim(0, self.Ly)
         ax.set_aspect('equal')
-        ax.set_title('MD Simulation Animation')
+        if self.ensemble == 'NVE':
+            ax.set_title(f'MD Simulation Animation, NVE, T = {self.initial_temperatureq}, rho = {self.density}')
+        elif self.ensemble == 'NVT':
+            ax.set_title(f'MD Simulation Animation, NVT, T = {self.target_temperature}, rho = {self.density}')
+
 
         scatter = ax.scatter(self.positions[:, 0], self.positions[:, 1], s=50, color='blue')
         if show_vectors:
@@ -395,7 +399,7 @@ class MDSimulation2D:
         if save_path:
             if save_path.lower().endswith('.mp4'):
                 pass
-                writer = animation.PillowWriter(fps=1000//interval)
+                writer = animation.FFMpegWriter(fps=1000//interval)
             elif save_path.lower().endswith('.gif'):
                 pass
                 writer = animation.PillowWriter(fps=1000//interval)
