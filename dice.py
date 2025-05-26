@@ -3,28 +3,19 @@ import matplotlib.pyplot as plt
 import random
 from time import time
 
-steps = 100_000
-numberOfSides = 6
-numberOfthrows = 5
+c = np.longdouble(3e8) # m/s
+ly = 9.467e15
 
-sides = np.arange(1, numberOfSides+1, 1)
-results = np.empty(numberOfSides)
+def gamma(v):
+    return np.longdouble((np.sqrt(1+np.longdouble(v)**2 / c**2))**(-1))
 
-throws = np.empty(numberOfthrows) 
-print("Starting...")
-start = time()
+v = 30
+l = 2.5e6 * ly
 
-for i in range(steps):
-    results[int(max(np.random.rand(numberOfthrows))*numberOfSides)] += 1
+dl = l - gamma(v)*l
 
-end = time()
-print(f"time = {end - start} s")
+t = l / c
 
-expectationValue = sides @ results / steps
+dt = (t - t/gamma(v))
 
-print(f"expectation value = {expectationValue}")
-
-plt.scatter(sides, results/steps*100)
-plt.ylabel("probability (%)")
-
-plt.show()
+print(dt)
