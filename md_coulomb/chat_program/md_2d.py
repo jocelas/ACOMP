@@ -361,7 +361,7 @@ class MDSimulation2D:
         ax.set_ylim(0, self.Ly)
         ax.set_aspect('equal')
         if self.ensemble == 'NVE':
-            ax.set_title(f'MD Simulation Animation, NVE, T = {self.initial_temperatureq}, rho = {self.density}')
+            ax.set_title(f'MD Simulation Animation, NVE, T = {self.initial_temperature}, rho = {self.density}')
         elif self.ensemble == 'NVT':
             ax.set_title(f'MD Simulation Animation, NVT, T = {self.target_temperature}, rho = {self.density}')
 
