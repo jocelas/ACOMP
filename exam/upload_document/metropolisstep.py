@@ -71,7 +71,7 @@ def simulation(n_steps, betas = betas, x_initial = x_initial, parallel_tempering
     mc_acceptance_ratio = np.zeros(n_temperatures)
     swap_acceptance_ratio = np.zeros((n_temperatures, n_temperatures))
     
-    single_trajectory = np.empty(n_steps)
+    trajectories = np.empty((n_temperatures, n_steps))
 
     for step in range(n_steps):
         for i in range(n_temperatures):
@@ -88,32 +88,34 @@ def simulation(n_steps, betas = betas, x_initial = x_initial, parallel_tempering
                 swap_acceptance_ratio[i, i + 1] += swap_accepted
                 swap_acceptance_ratio[i + 1, i] += swap_accepted
 
-        single_trajectory[step] = x[2]  # Store the trajectory of the first temperature
+        trajectories[:,step] = x  # Store the trajectory of the first temperature
 
     mc_acceptance_ratio /= n_steps
     swap_acceptance_ratio /= (n_steps // parallel_tempering_after)
 
-    return energies, mc_acceptance_ratio, swap_acceptance_ratio, single_trajectory
+    return energies, mc_acceptance_ratio, swap_acceptance_ratio, trajectories
 
 
-def trajectory_histogram(trajectory, n_bins=100):
+def trajectory_histogram(trajectories, n_bins=100):
     """Plot histogram of the trajectory
 
     Args:
         trajectory (np.ndarray): Trajectory data
         n_bins (int): Number of bins for the histogram
     """
-    plt.figure(figsize=(8, 4))
-    plt.hist(trajectory, bins=n_bins, density=True, alpha=0.6, color='g', label='Trajectory Histogram')
+    plt.figure(figsize=(8, 6))
+    for i,trajectory in enumerate(trajectories):
+        plt.hist(trajectory, bins=n_bins, density=True, alpha=0.6, label=f'T={Temperatures[i]}')
 
     # Plot the potential energy for reference
     x = np.linspace(-2.5, 2.5, 1000)
-    U_x = np.vectorize(U)(x)
-    plt.plot(x, U_x, 'r-', lw=2, label='Potential Energy')
+    U_x = 0.5*np.vectorize(U)(x)
+    plt.plot(x, U_x, 'r-', lw=1, label='Potential Energy')
     plt.title('Trajectory Histogram')
     plt.xlabel('Position')
-    plt.ylabel('Density')
-    plt.grid()
+    plt.ylabel('Density (a.u.)')
+    plt.grid(linestyle='--')
     plt.legend()
     plt.show()
+
 

@@ -46,7 +46,8 @@
 \maketitle
 
 \begin{abstract}
-This paper presents a minimal example of a computational physics report with equations, code, and results. We simulate a basic physical system and analyze its behavior using numerical methods.
+This is my submission of the final PUE exam. You can find supporting data and information about how exactly the code was implemented in the supporting Jupyter Notebook. That, however, is very raw and not nice to read, and this document should  be mostly complete or at least consistent.
+Note that unless explicitly SI units are used, $k\sub B = 1$, so $k\sub BT$ is just written as $T$, for example.
 \end{abstract}
 
 \section{Units and periodic boundary conditions}
@@ -115,21 +116,18 @@ A typical acceptance rule in the Metropolis step to preserve detailed balance is
 where $y$ ($x$) is the new (old) sample from the ensemble and $f$ the corresponding probability density function.
 For our case, 
 \begin{equation}
-	f(x) = \frac{1}{Q\sub{extended}}\prod_{k=1}^{M}\exp[-\beta_k H(x_k)]
+	f(x) = \frac{1}{Q\sub{extended}}\exp[-\beta_i U(x_i)]\exp[-\beta_j U(x_j)]\prod_{k\neq i,j}\exp[-\beta_k U(x_k)]
 \end{equation}
-In our case, we just worry about the potential, so $H(x) = U(x)$.
 In the trial step, we want to try to swap the positions from the trajectories from two different temperatures, $T_i$ and $T_j$.
 So the swapped probability is:
 \begin{equation}
-	f(y) = \frac{1}{Q\sub{extended}}\exp[-\beta_j U(x_i)]\exp[-\beta_i U(x_j)]\prod_{k\neq i,j}\exp[-\beta_k H(x_k)]
+	f(y) = \frac{1}{Q\sub{extended}}\exp[-\beta_j U(x_i)]\exp[-\beta_i U(x_j)]\prod_{k\neq i,j}\exp[-\beta_k U(x_k)]
 \end{equation}
 The ratio simplifies:
 \begin{equation}\label{eq:acc}
-	\frac{f(y)}{f(x)} = \exp\left[  (\beta_i - \beta_j) (U(x_i) - U(x_j)) = \exp[\Delta\beta\Delta U]      \right]
+	\frac{f(y)}{f(x)} = \exp\left[  (\beta_i - \beta_j) (U(x_i) - U(x_j))\right] = \exp[\Delta\beta\Delta U],     
 \end{equation}
-
-In the exercise, however, the exponent is $-\Delta\beta\Delta U$. Our results agrees with \href{https://en.wikipedia.org/wiki/Parallel_tempering}{Wikipedia}.
-We believe, however, that this is just an inconsistency in the definitions of $\Delta\beta$ and $\Delta U$, which we will continue to use exactly from the exercise sheet, but using the step with a positive exponent, as in \autoref{eq:acc}.
+hence we have arrived at our desired acceptance probability.
 
 \subsection{Implementing the code}
 
@@ -151,7 +149,8 @@ The distributions of the trajectories with and without parallel tempering are in
 \end{figure}
 
 
-The trajectory of the $ = 0.05$ particle at different zoom levels can be seen in Figures \ref{fig:all} -- \ref{fig:few}.
+The trajectory of the $T = 0.05$ particle with tempering at different zoom levels can be seen in Figures \ref{fig:all} -- \ref{fig:few}.
+For comparison, the position vs. time graph of the no-tempering particle can be seen in \autoref{fig:no}.
 
 \begin{figure}[p]
 	\centering
@@ -174,7 +173,7 @@ The trajectory of the $ = 0.05$ particle at different zoom levels can be seen in
 \begin{figure}
 	\centering
 	\includegraphics[width = 0.5\textwidth]{steps_no.png}
-	\caption{position of $T = 0.05$ particle against time, no annealing}
+	\caption{position of $T = 0.05$ particle against time, no tempering}
 	\label{fig:no}
 \end{figure}
 
@@ -182,10 +181,10 @@ The simulation was run for $\num{1e6}$ steps. The acceptance ratio can be seen i
 
 \begin{table}
 	\centering
-		\caption{Acceptance ratios (bottom two lines are the swapping acceptances for the tempering step)}
+		\caption{Acceptance ratios of MC simulation with and without parallel tempering (bottom two lines are the swapping acceptances for the tempering step)}
 	\label{tab:acc}
-	\begin{tabular}{r r r}\hline
-		$T$ & tempering & no temp.\\\hline\hline
+	\begin{tabular}{r r r}\hline\hline
+		$T$ & tempering & no temp.\\\hline
 		0.05 & 0.37 & 0.46\\
 		0.5 & 0.74 & 0.79\\
 		0.2 & 0.88 & 0.89\\\hline
@@ -210,7 +209,7 @@ In this simulation, this was not easy at all because sometimes, the values did n
 \begin{figure}
 	\centering
 	\includegraphics[width = 0.6\textwidth]{block_average.png}
-	\caption{Standard error scaling with block size for $N =$ 1e6 steps, no annealing.}
+	\caption{Standard error scaling with block size for $N =$ 1e6 steps, no annealing, $T = 0.5$.}
 	\label{fig:converge}
 \end{figure}
 
@@ -222,7 +221,7 @@ The values for the standard error in \autoref{tab:averages} was extracted by sim
 
 \begin{table}
 	\centering
-		\caption{Estimates for position averages and Standard errors with annealing (subscript `ann.') and without.}
+		\caption{Estimates for position averages and Standard errors with tempering (subscript `temp.') and without.}
 	\label{tab:averages}
 	\begin{tabular}{r r r r r}\hline
 		T & $\langle x \rangle\sub{temp.}$ & $\Delta \bar x\sub{ann.}$ & $\langle x \rangle$ & $\Delta \bar x$\\\hline
@@ -276,7 +275,7 @@ Similarly, we can get the diffusion coefficient $D$:
 Further, if we expand the MSD, we get
 \begin{align}
 	&2\mean{v^2}\left[\tau t - \tau^2 \left(1-1-\frac t\tau - \frac{t^2}{2\tau^2} - O(t^3)\right)\right]\\
-	= &2\mean{v^2}t^2 + O(t^3).
+	= &\mean{v^2}t^2 + O(t^3).
 \end{align}
 
 So for small t, the system behaves balistically (MSD scales with $t^2$).
